@@ -1,0 +1,124 @@
+﻿using System.Security.Claims;
+using BusinessLayer.DTOs.Availability;
+using BusinessLayer.IServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EduNest_Backend.Controllers
+{
+    [ApiController]
+    [Route("api/availability")]
+    public sealed class AvailabilityController : ControllerBase
+    {
+        private readonly IAvailabilityService _availabilityService;
+
+        public AvailabilityController(IAvailabilityService availabilityService)
+        {
+            _availabilityService = availabilityService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<AvailabilityResponse>>> GetAll()
+        {
+            return Ok(await _availabilityService.GetAllAsync());
+        }
+
+        [HttpGet("tutor/{tutorId:int}")]
+        public async Task<ActionResult<List<AvailabilityResponse>>> GetByTutor(int tutorId)
+        {
+            return Ok(await _availabilityService.GetByTutorAsync(tutorId));
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<List<AvailabilityResponse>>> GetMyAvailability()
+        {
+            return Ok(await _availabilityService.GetMyAvailabilityAsync(CurrentUserId()));
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<AvailabilityResponse>> Create(
+            [FromBody] CreateAvailabilityRequest request)
+        {
+            try
+            {
+                return Ok(await _availabilityService.CreateAsync(CurrentUserId(), request));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{availabilityId:int}")]
+        public async Task<ActionResult<AvailabilityResponse>> Update(
+            int availabilityId,
+            [FromBody] UpdateAvailabilityRequest request)
+        {
+            try
+            {
+                return Ok(await _availabilityService.UpdateAsync(
+                    CurrentUserId(),
+                    availabilityId,
+                    request));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("{availabilityId:int}")]
+        public async Task<IActionResult> Delete(int availabilityId)
+        {
+            await _availabilityService.DeleteAsync(CurrentUserId(), availabilityId);
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Tutor")]
+        [HttpPatch("{availabilityId:int}/status")]
+        public async Task<ActionResult<AvailabilityResponse>> SetStatus(
+    int availabilityId,
+    [FromBody] UpdateAvailabilityStatusRequest request)
+        {
+            try
+            {
+                return Ok(await _availabilityService.SetStatusAsync(
+                    CurrentUserId(),
+                    availabilityId,
+                    request.Status));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        private ActionResult HandleException(Exception ex)
+        {
+            return ex switch
+            {
+                KeyNotFoundException => NotFound(new { message = ex.Message }),
+                UnauthorizedAccessException => Forbid(),
+                InvalidOperationException => BadRequest(new { message = ex.Message }),
+                ArgumentException => BadRequest(new { message = ex.Message }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { message = "Server error." })
+            };
+        }
+
+        private int CurrentUserId()
+        {
+            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? User.FindFirstValue("sub");
+
+            if (!int.TryParse(raw, out var userId))
+                throw new UnauthorizedAccessException("Invalid token.");
+
+            return userId;
+        }
+    }
+}
