@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using BusinessLayer.DTOs.Attendance;
 using BusinessLayer.DTOs.Lesson;
 using BusinessLayer.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -35,24 +34,6 @@ namespace EduNest_Backend.Controllers
                 CurrentUserId(),
                 bookingId,
                 request));
-        }
-
-        [HttpPost("{lessonId:int}/attendance")]
-        public async Task<ActionResult<LessonResponse>> MarkAttendance(
-            int lessonId,
-            MarkAttendanceRequest request)
-        {
-            try
-            {
-                return Ok(await _lessonService.MarkAttendanceAsync(
-                    CurrentUserId(),
-                    lessonId,
-                    request));
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex);
-            }
         }
 
         [HttpPost("{lessonId:int}/complete")]

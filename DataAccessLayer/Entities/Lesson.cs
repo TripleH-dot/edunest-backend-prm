@@ -30,9 +30,5 @@ namespace DataAccessLayer.Entities
         // Navigation properties
         [ForeignKey("BookingId")]
         public virtual Booking Booking { get; set; }
-
-        public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
-        public virtual ICollection<ProgressReport> ProgressReports { get; set; } = new List<ProgressReport>();
-        public virtual ICollection<Homework> Homeworks { get; set; } = new List<Homework>();
     }
 }

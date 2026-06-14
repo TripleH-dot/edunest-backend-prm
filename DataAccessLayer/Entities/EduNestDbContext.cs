@@ -22,20 +22,10 @@ namespace DataAccessLayer.Entities
 
         // ── Lesson & Tracking ─────────────────────────────────────────────────
         public DbSet<Lesson> Lessons { get; set; }
-        public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<ProgressReport> ProgressReports { get; set; }
-        public DbSet<Review> Reviews { get; set; }
 
         // ── Learning Content ──────────────────────────────────────────────────
-        public DbSet<Homework> Homeworks { get; set; }
         public DbSet<MaterialSection> MaterialSections { get; set; }
         public DbSet<Material> Materials { get; set; }
-        public DbSet<Submission> Submissions { get; set; }
-        public DbSet<MultipleChoiceQuestion> MultipleChoiceQuestions { get; set; }
-        public DbSet<QuestionOption> QuestionOptions { get; set; }
-        public DbSet<MultipleChoiceQuestionAnswer> MultipleChoiceQuestionAnswers { get; set; }
-        public DbSet<Essay> Essays { get; set; }
-        public DbSet<EssayAnswer> EssayAnswers { get; set; }
 
         // ── Chat ──────────────────────────────────────────────────────────────
         public DbSet<Conversation> Conversations { get; set; }
@@ -48,16 +38,8 @@ namespace DataAccessLayer.Entities
         public DbSet<Payout> Payouts { get; set; }
         public DbSet<TutorBankAccount> TutorBankAccounts { get; set; }
 
-        public DbSet<FavoriteTutor> FavoriteTutors { get; set; }
-        
         //metric
         public DbSet<AppMetric> AppMetrics { get; set; }
-
-        public DbSet<TutorReport> TutorReports { get; set; }
-        public DbSet<TutorReportProofImage> TutorReportProofImages { get; set; }
-
-        public DbSet<SupportReport> SupportReports { get; set; }
-        public DbSet<SupportReportProofImage> SupportReportProofImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -158,82 +140,6 @@ namespace DataAccessLayer.Entities
                 .HasForeignKey(l => l.BookingId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ── Attendance ────────────────────────────────────────────────────
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Lesson)
-                .WithMany(l => l.Attendances)
-                .HasForeignKey(a => a.LessonId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Student)
-                .WithMany(s => s.Attendances)
-                .HasForeignKey(a => a.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Attendance>()
-                .HasIndex(a => new { a.LessonId, a.StudentId })
-                .IsUnique();
-
-            // ── ProgressReport ────────────────────────────────────────────────
-            modelBuilder.Entity<ProgressReport>()
-                .HasOne(pr => pr.Lesson)
-                .WithMany(l => l.ProgressReports)
-                .HasForeignKey(pr => pr.LessonId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ProgressReport>()
-                .HasOne(pr => pr.Tutor)
-                .WithMany(t => t.ProgressReports)
-                .HasForeignKey(pr => pr.TutorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ProgressReport>()
-                .HasOne(pr => pr.Student)
-                .WithMany(s => s.ProgressReports)
-                .HasForeignKey(pr => pr.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // ── Review ────────────────────────────────────────────────────────
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Tutor)
-                .WithMany(t => t.Reviews)
-                .HasForeignKey(r => r.TutorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Booking)
-                .WithMany(b => b.Reviews)
-                .HasForeignKey(r => r.BookingId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Reviews)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Review>()
-                .HasIndex(r => new { r.UserId, r.BookingId })
-                .IsUnique();
-
-            // ── Homework → Booking ────────────────────────────────────────────
-            modelBuilder.Entity<Homework>()
-                .Property(h => h.Type)
-                .HasDefaultValue("MultipleChoice");
-
-            modelBuilder.Entity<Homework>()
-                .HasOne(h => h.Booking)
-                .WithMany(b => b.Homeworks)
-                .HasForeignKey(h => h.BookingId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Homework>()
-                .HasOne(h => h.Lesson)
-                .WithMany(l => l.Homeworks)
-                .HasForeignKey(h => h.LessonId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             // ── Material → Availability ───────────────────────────────────────
             modelBuilder.Entity<Material>()
                 .HasOne(m => m.Availability)
@@ -251,80 +157,6 @@ namespace DataAccessLayer.Entities
                 .HasOne(m => m.Section)
                 .WithMany(s => s.Materials)
                 .HasForeignKey(m => m.MaterialSectionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── Submission ────────────────────────────────────────────────────
-            modelBuilder.Entity<Submission>()
-                .HasOne(s => s.Homework)
-                .WithMany(h => h.Submissions)
-                .HasForeignKey(s => s.HomeworkId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Submission>()
-                .HasOne(s => s.Student)
-                .WithMany(st => st.Submissions)
-                .HasForeignKey(s => s.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Submission>()
-                .HasOne(s => s.User)
-                .WithMany(u => u.Submissions)
-                .HasForeignKey(s => s.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Submission>()
-                .HasIndex(s => new { s.HomeworkId, s.StudentId })
-                .IsUnique();
-
-            modelBuilder.Entity<Submission>()
-                .HasIndex(s => new { s.HomeworkId, s.UserId })
-                .IsUnique();
-
-            // ── MultipleChoiceQuestion ────────────────────────────────────────
-            modelBuilder.Entity<MultipleChoiceQuestion>()
-                .HasOne(q => q.Homework)
-                .WithMany(h => h.MultipleChoiceQuestions)
-                .HasForeignKey(q => q.HomeworkId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── QuestionOption ────────────────────────────────────────────────
-            modelBuilder.Entity<QuestionOption>()
-                .HasOne(qo => qo.MultipleChoiceQuestion)
-                .WithMany(q => q.QuestionOptions)
-                .HasForeignKey(qo => qo.MultipleChoiceQuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── MultipleChoiceQuestionAnswer ──────────────────────────────────
-            modelBuilder.Entity<MultipleChoiceQuestionAnswer>()
-                .HasOne(a => a.QuestionOption)
-                .WithMany(qo => qo.Answers)
-                .HasForeignKey(a => a.QuestionOptionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MultipleChoiceQuestionAnswer>()
-                .HasOne(a => a.Submission)
-                .WithMany(s => s.MultipleChoiceQuestionAnswers)
-                .HasForeignKey(a => a.SubmissionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── Essay ─────────────────────────────────────────────────────────
-            modelBuilder.Entity<Essay>()
-                .HasOne(e => e.Homework)
-                .WithMany(h => h.Essays)
-                .HasForeignKey(e => e.HomeworkId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── EssayAnswer ───────────────────────────────────────────────────
-            modelBuilder.Entity<EssayAnswer>()
-                .HasOne(ea => ea.Essay)
-                .WithMany(e => e.EssayAnswers)
-                .HasForeignKey(ea => ea.EssayId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<EssayAnswer>()
-                .HasOne(ea => ea.Submission)
-                .WithMany(s => s.EssayAnswers)
-                .HasForeignKey(ea => ea.SubmissionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ── Conversation ──────────────────────────────────────────────────
@@ -380,72 +212,6 @@ namespace DataAccessLayer.Entities
                 .HasForeignKey<Payout>(p => p.WalletTransactionId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ── FavoriteTutor ─────────────────────────────────────────────────
-            modelBuilder.Entity<FavoriteTutor>()
-                .HasOne(f => f.User)
-                .WithMany(u => u.FavoriteTutors)
-                .HasForeignKey(f => f.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<FavoriteTutor>()
-                .HasOne(f => f.Tutor)
-                .WithMany(t => t.FavoriteTutors)
-                .HasForeignKey(f => f.TutorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<FavoriteTutor>()
-                .HasIndex(f => new { f.UserId, f.TutorId })
-                .IsUnique();
-
-            // ── TutorReport ─────────────────────────────────────────────────
-            modelBuilder.Entity<TutorReport>()
-                .HasOne(r => r.ReporterUser)
-                .WithMany()
-                .HasForeignKey(r => r.ReporterUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TutorReport>()
-                .HasOne(r => r.Tutor)
-                .WithMany()
-                .HasForeignKey(r => r.TutorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TutorReport>()
-                .HasOne(r => r.Booking)
-                .WithMany()
-                .HasForeignKey(r => r.BookingId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TutorReport>()
-                .HasOne(r => r.Availability)
-                .WithMany()
-                .HasForeignKey(r => r.AvailabilityId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TutorReport>()
-                .HasOne(r => r.Lesson)
-                .WithMany()
-                .HasForeignKey(r => r.LessonId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<TutorReportProofImage>()
-                .HasOne(p => p.TutorReport)
-                .WithMany(r => r.ProofImages)
-                .HasForeignKey(p => p.TutorReportId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<SupportReport>()
-    .HasOne(r => r.User)
-    .WithMany()
-    .HasForeignKey(r => r.UserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SupportReportProofImage>()
-                .HasOne(p => p.SupportReport)
-                .WithMany(r => r.ProofImages)
-                .HasForeignKey(p => p.SupportReportId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // ── Indexes ───────────────────────────────────────────────────────
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
@@ -457,15 +223,6 @@ namespace DataAccessLayer.Entities
             modelBuilder.Entity<Availability>()
                 .HasIndex(a => new { a.TutorId, a.DayOfWeek });
 
-            modelBuilder.Entity<Homework>()
-                .HasIndex(h => new { h.LessonId, h.UploadedAt });
-
-            modelBuilder.Entity<Homework>()
-                .HasIndex(h => new { h.BookingId, h.UploadedAt });
-
-            modelBuilder.Entity<Homework>()
-                .HasIndex(h => h.DueDate);
-
             modelBuilder.Entity<Lesson>()
                 .HasIndex(l => new { l.BookingId, l.ScheduleTime });
 
@@ -475,29 +232,8 @@ namespace DataAccessLayer.Entities
             modelBuilder.Entity<Material>()
                 .HasIndex(m => new { m.AvailabilityId, m.MaterialSectionId, m.CreatedAt });
 
-            modelBuilder.Entity<Submission>()
-                .HasIndex(s => new { s.HomeworkId, s.SubmittedAt });
-
             modelBuilder.Entity<AppMetric>()
     .HasIndex(x => new { x.Type, x.DeviceId });
-
-            modelBuilder.Entity<TutorReport>()
-    .HasIndex(r => new { r.ReporterUserId, r.BookingId });
-
-            modelBuilder.Entity<TutorReport>()
-                .HasIndex(r => new { r.TutorId, r.Status });
-
-            modelBuilder.Entity<TutorReport>()
-                .HasIndex(r => r.CreatedAt);
-
-            modelBuilder.Entity<SupportReport>()
-                .HasIndex(r => new { r.UserId, r.Status });
-
-            modelBuilder.Entity<SupportReport>()
-                .HasIndex(r => new { r.Role, r.Status });
-
-            modelBuilder.Entity<SupportReport>()
-                .HasIndex(r => r.CreatedAt);
 
             // ── PostgreSQL lowercase naming ───────────────────────────────────  ← ADD HERE
             foreach (var entity in modelBuilder.Model.GetEntityTypes())

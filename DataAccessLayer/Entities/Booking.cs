@@ -43,7 +43,5 @@ namespace DataAccessLayer.Entities
 
         public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
         public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public virtual ICollection<Homework> Homeworks { get; set; } = new List<Homework>();
     }
 }

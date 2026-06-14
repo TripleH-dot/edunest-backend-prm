@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(EduNestDbContext))]
-    [Migration("20260601130617_ChangeAvailabilityTimeToTimeSpan")]
-    partial class ChangeAvailabilityTimeToTimeSpan
+    [Migration("20260614110701_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,54 +25,47 @@ namespace DataAccessLayer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Attendance", b =>
+            modelBuilder.Entity("DataAccessLayer.Entities.AppMetric", b =>
                 {
-                    b.Property<int>("AttendanceId")
+                    b.Property<int>("AppMetricId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("attendanceid");
+                        .HasColumnName("appmetricid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AttendanceId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AppMetricId"));
 
-                    b.Property<DateTime?>("AttendedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("attendedat");
+                    b.Property<string>("AppVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("appversion");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdat");
 
-                    b.Property<int>("LessonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("lessonid");
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("deviceid");
 
-                    b.Property<string>("Note")
+                    b.Property<string>("Platform")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("platform");
+
+                    b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("note");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("type");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
+                    b.HasKey("AppMetricId")
+                        .HasName("pk_appmetrics");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("studentid");
+                    b.HasIndex("Type", "DeviceId")
+                        .HasDatabaseName("ix_appmetrics_type_deviceid");
 
-                    b.HasKey("AttendanceId")
-                        .HasName("pk_attendances");
-
-                    b.HasIndex("StudentId")
-                        .HasDatabaseName("ix_attendances_studentid");
-
-                    b.HasIndex("LessonId", "StudentId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_attendances_lessonid_studentid");
-
-                    b.ToTable("attendances");
+                    b.ToTable("appmetrics");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Availability", b =>
@@ -86,8 +79,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("DayOfWeek")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
                         .HasColumnName("dayofweek");
 
                     b.Property<DateTime>("EndCourseTime")
@@ -95,7 +88,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("endcoursetime");
 
                     b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("interval")
+                        .HasColumnType("time without time zone")
                         .HasColumnName("endtime");
 
                     b.Property<string>("Level")
@@ -110,6 +103,11 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("mode");
 
+                    b.Property<string>("OfflineAreas")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("offlineareas");
+
                     b.Property<decimal>("PricePerSlot")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("priceperslot");
@@ -123,7 +121,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("startcoursetime");
 
                     b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("interval")
+                        .HasColumnType("time without time zone")
                         .HasColumnName("starttime");
 
                     b.Property<string>("Status")
@@ -173,10 +171,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("parentid");
-
                     b.Property<decimal>("PriceAtBooking")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("priceatbooking");
@@ -197,9 +191,6 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("BookingId")
                         .HasName("pk_bookings");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_bookings_parentid");
 
                     b.HasIndex("StudentId")
                         .HasDatabaseName("ix_bookings_studentid");
@@ -262,165 +253,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("conversationusers");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Essay", b =>
-                {
-                    b.Property<int>("EssayId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("essayid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EssayId"));
-
-                    b.Property<int>("HomeworkId")
-                        .HasColumnType("integer")
-                        .HasColumnName("homeworkid");
-
-                    b.Property<double>("Points")
-                        .HasColumnType("double precision")
-                        .HasColumnName("points");
-
-                    b.Property<string>("QuestionText")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("questiontext");
-
-                    b.HasKey("EssayId")
-                        .HasName("pk_essays");
-
-                    b.HasIndex("HomeworkId")
-                        .HasDatabaseName("ix_essays_homeworkid");
-
-                    b.ToTable("essays");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.EssayAnswer", b =>
-                {
-                    b.Property<int>("EssayAnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("essayanswerid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EssayAnswerId"));
-
-                    b.Property<string>("AnswerText")
-                        .IsRequired()
-                        .HasMaxLength(5000)
-                        .HasColumnType("character varying(5000)")
-                        .HasColumnName("answertext");
-
-                    b.Property<int>("EssayId")
-                        .HasColumnType("integer")
-                        .HasColumnName("essayid");
-
-                    b.Property<string>("Feedback")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("feedback");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("double precision")
-                        .HasColumnName("score");
-
-                    b.Property<int>("SubmissionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("submissionid");
-
-                    b.HasKey("EssayAnswerId")
-                        .HasName("pk_essayanswers");
-
-                    b.HasIndex("EssayId")
-                        .HasDatabaseName("ix_essayanswers_essayid");
-
-                    b.HasIndex("SubmissionId")
-                        .HasDatabaseName("ix_essayanswers_submissionid");
-
-                    b.ToTable("essayanswers");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.FavoriteTutor", b =>
-                {
-                    b.Property<int>("FavoriteId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("favoriteid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FavoriteId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdat");
-
-                    b.Property<int>("ParentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("parentid");
-
-                    b.Property<int>("TutorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tutorid");
-
-                    b.HasKey("FavoriteId")
-                        .HasName("pk_favoritetutors");
-
-                    b.HasIndex("TutorId")
-                        .HasDatabaseName("ix_favoritetutors_tutorid");
-
-                    b.HasIndex("ParentId", "TutorId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_favoritetutors_parentid_tutorid");
-
-                    b.ToTable("favoritetutors");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Homework", b =>
-                {
-                    b.Property<int>("HomeworkId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("homeworkid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("HomeworkId"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("integer")
-                        .HasColumnName("bookingid");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("duedate");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("uploadedat");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("url");
-
-                    b.HasKey("HomeworkId")
-                        .HasName("pk_homeworks");
-
-                    b.HasIndex("BookingId")
-                        .HasDatabaseName("ix_homeworks_bookingid");
-
-                    b.ToTable("homeworks");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Lesson", b =>
                 {
                     b.Property<int>("LessonId")
@@ -457,8 +289,8 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("LessonId")
                         .HasName("pk_lessons");
 
-                    b.HasIndex("BookingId")
-                        .HasDatabaseName("ix_lessons_bookingid");
+                    b.HasIndex("BookingId", "ScheduleTime")
+                        .HasDatabaseName("ix_lessons_bookingid_scheduletime");
 
                     b.ToTable("lessons");
                 });
@@ -476,21 +308,43 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("availabilityid");
 
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("contenttype");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdat");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
+                    b.Property<string>("FileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("filename");
+
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("filesize");
+
                     b.Property<string>("FileUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("fileurl");
+
+                    b.Property<int?>("MaterialSectionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("materialsectionid");
+
+                    b.Property<string>("MaterialType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("materialtype");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -498,13 +352,65 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("title");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updatedat");
+
                     b.HasKey("MaterialId")
                         .HasName("pk_materials");
 
-                    b.HasIndex("AvailabilityId")
-                        .HasDatabaseName("ix_materials_availabilityid");
+                    b.HasIndex("MaterialSectionId")
+                        .HasDatabaseName("ix_materials_materialsectionid");
+
+                    b.HasIndex("AvailabilityId", "MaterialSectionId", "CreatedAt")
+                        .HasDatabaseName("ix_materials_availabilityid_materialsectionid_createdat");
 
                     b.ToTable("materials");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.MaterialSection", b =>
+                {
+                    b.Property<int>("MaterialSectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("materialsectionid");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaterialSectionId"));
+
+                    b.Property<int>("AvailabilityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("availabilityid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdat");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("displayorder");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updatedat");
+
+                    b.HasKey("MaterialSectionId")
+                        .HasName("pk_materialsections");
+
+                    b.HasIndex("AvailabilityId", "DisplayOrder")
+                        .HasDatabaseName("ix_materialsections_availabilityid_displayorder");
+
+                    b.ToTable("materialsections");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Message", b =>
@@ -552,109 +458,6 @@ namespace DataAccessLayer.Migrations
                         .HasDatabaseName("ix_messages_userid");
 
                     b.ToTable("messages");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.MultipleChoiceQuestion", b =>
-                {
-                    b.Property<int>("MultipleChoiceQuestionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("multiplechoicequestionid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MultipleChoiceQuestionId"));
-
-                    b.Property<int>("HomeworkId")
-                        .HasColumnType("integer")
-                        .HasColumnName("homeworkid");
-
-                    b.Property<double>("Point")
-                        .HasColumnType("double precision")
-                        .HasColumnName("point");
-
-                    b.Property<string>("QuestionText")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("questiontext");
-
-                    b.HasKey("MultipleChoiceQuestionId")
-                        .HasName("pk_multiplechoicequestions");
-
-                    b.HasIndex("HomeworkId")
-                        .HasDatabaseName("ix_multiplechoicequestions_homeworkid");
-
-                    b.ToTable("multiplechoicequestions");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.MultipleChoiceQuestionAnswer", b =>
-                {
-                    b.Property<int>("MultipleChoiceQuestionAnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("multiplechoicequestionanswerid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MultipleChoiceQuestionAnswerId"));
-
-                    b.Property<int?>("MultipleChoiceQuestionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("multiplechoicequestionid");
-
-                    b.Property<int>("QuestionOptionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("questionoptionid");
-
-                    b.Property<string>("SelectedOption")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("selectedoption");
-
-                    b.Property<int>("SubmissionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("submissionid");
-
-                    b.HasKey("MultipleChoiceQuestionAnswerId")
-                        .HasName("pk_multiplechoicequestionanswers");
-
-                    b.HasIndex("MultipleChoiceQuestionId")
-                        .HasDatabaseName("ix_multiplechoicequestionanswers_multiplechoicequestionid");
-
-                    b.HasIndex("QuestionOptionId")
-                        .HasDatabaseName("ix_multiplechoicequestionanswers_questionoptionid");
-
-                    b.HasIndex("SubmissionId")
-                        .HasDatabaseName("ix_multiplechoicequestionanswers_submissionid");
-
-                    b.ToTable("multiplechoicequestionanswers");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Parent", b =>
-                {
-                    b.Property<int>("ParentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("parentid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ParentId"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("address");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("userid");
-
-                    b.HasKey("ParentId")
-                        .HasName("pk_parents");
-
-                    b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_parents_userid");
-
-                    b.ToTable("parents");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Payment", b =>
@@ -736,9 +539,49 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("amount");
 
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approvedat");
+
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paidat");
+
+                    b.Property<string>("PayOSChiApprovalState")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("payoschiapprovalstate");
+
+                    b.Property<string>("PayOSChiBatchId")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("payoschibatchid");
+
+                    b.Property<string>("PayOSChiFailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("payoschifailurereason");
+
+                    b.Property<string>("PayOSChiPayoutItemId")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("payoschipayoutitemid");
+
+                    b.Property<string>("PayOSChiReferenceId")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("payoschireferenceid");
+
+                    b.Property<string>("PayOSChiTransactionState")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("payoschitransactionstate");
+
+                    b.Property<string>("PayoutMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("payoutmethod");
 
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("timestamp with time zone")
@@ -771,134 +614,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("payouts");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.ProgressReport", b =>
-                {
-                    b.Property<int>("ReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("reportid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReportId"));
-
-                    b.Property<string>("Comments")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("comments");
-
-                    b.Property<TimeSpan>("CreatedAt")
-                        .HasColumnType("interval")
-                        .HasColumnName("createdat");
-
-                    b.Property<int>("LessonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("lessonid");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("studentid");
-
-                    b.Property<int>("TutorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tutorid");
-
-                    b.HasKey("ReportId")
-                        .HasName("pk_progressreports");
-
-                    b.HasIndex("LessonId")
-                        .HasDatabaseName("ix_progressreports_lessonid");
-
-                    b.HasIndex("StudentId")
-                        .HasDatabaseName("ix_progressreports_studentid");
-
-                    b.HasIndex("TutorId")
-                        .HasDatabaseName("ix_progressreports_tutorid");
-
-                    b.ToTable("progressreports");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuestionOption", b =>
-                {
-                    b.Property<int>("QuestionOptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("questionoptionid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("QuestionOptionId"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("content");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("boolean")
-                        .HasColumnName("iscorrect");
-
-                    b.Property<int>("MultipleChoiceQuestionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("multiplechoicequestionid");
-
-                    b.HasKey("QuestionOptionId")
-                        .HasName("pk_questionoptionss");
-
-                    b.HasIndex("MultipleChoiceQuestionId")
-                        .HasDatabaseName("ix_questionoptionss_multiplechoicequestionid");
-
-                    b.ToTable("questionoptionss");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Review", b =>
-                {
-                    b.Property<int>("ReviewId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("reviewid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("integer")
-                        .HasColumnName("bookingid");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("comment");
-
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("parentid");
-
-                    b.Property<decimal>("Rating")
-                        .HasColumnType("decimal(3,2)")
-                        .HasColumnName("rating");
-
-                    b.Property<int>("TutorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tutorid");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("uploadedat");
-
-                    b.HasKey("ReviewId")
-                        .HasName("pk_reviews");
-
-                    b.HasIndex("BookingId")
-                        .HasDatabaseName("ix_reviews_bookingid");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_reviews_parentid");
-
-                    b.HasIndex("TutorId")
-                        .HasDatabaseName("ix_reviews_tutorid");
-
-                    b.ToTable("reviews");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Student", b =>
                 {
                     b.Property<int>("StudentId")
@@ -912,10 +627,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("decimal(5,2)")
                         .HasColumnName("grade");
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("parentid");
-
                     b.Property<string>("School")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -928,9 +639,6 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("StudentId")
                         .HasName("pk_students");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_students_parentid");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -966,67 +674,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("subjects");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Submission", b =>
-                {
-                    b.Property<int>("SubmissionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("submissionid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SubmissionId"));
-
-                    b.Property<int>("HomeworkId")
-                        .HasColumnType("integer")
-                        .HasColumnName("homeworkid");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("studentid");
-
-                    b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submittedat");
-
-                    b.Property<double>("TotalScore")
-                        .HasColumnType("double precision")
-                        .HasColumnName("totalscore");
-
-                    b.HasKey("SubmissionId")
-                        .HasName("pk_submissions");
-
-                    b.HasIndex("StudentId")
-                        .HasDatabaseName("ix_submissions_studentid");
-
-                    b.HasIndex("HomeworkId", "StudentId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_submissions_homeworkid_studentid");
-
-                    b.ToTable("submissions");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Tier", b =>
-                {
-                    b.Property<int>("TierId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("tierid");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TierId"));
-
-                    b.Property<int>("CurrentStreak")
-                        .HasColumnType("integer")
-                        .HasColumnName("currentstreak");
-
-                    b.Property<int>("Rate")
-                        .HasColumnType("integer")
-                        .HasColumnName("rate");
-
-                    b.HasKey("TierId")
-                        .HasName("pk_tiers");
-
-                    b.ToTable("tiers");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Tutor", b =>
                 {
                     b.Property<int>("TutorId")
@@ -1042,9 +689,25 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("bio");
 
+                    b.Property<string>("CccdBackPublicId")
+                        .HasColumnType("text")
+                        .HasColumnName("cccdbackpublicid");
+
+                    b.Property<string>("CccdFrontPublicId")
+                        .HasColumnType("text")
+                        .HasColumnName("cccdfrontpublicid");
+
+                    b.Property<string>("CertificatePublicId")
+                        .HasColumnType("text")
+                        .HasColumnName("certificatepublicid");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean")
                         .HasColumnName("isverified");
+
+                    b.Property<string>("NationalIdNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("nationalidnumber");
 
                     b.Property<double>("Rating")
                         .HasColumnType("double precision")
@@ -1054,19 +717,29 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("revenue");
 
-                    b.Property<int?>("TierId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tierid");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer")
                         .HasColumnName("userid");
 
+                    b.Property<string>("VerificationRejectReason")
+                        .HasColumnType("text")
+                        .HasColumnName("verificationrejectreason");
+
+                    b.Property<DateTime?>("VerificationReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verificationreviewedat");
+
+                    b.Property<string>("VerificationStatus")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("verificationstatus");
+
+                    b.Property<DateTime?>("VerificationSubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verificationsubmittedat");
+
                     b.HasKey("TutorId")
                         .HasName("pk_tutors");
-
-                    b.HasIndex("TierId")
-                        .HasDatabaseName("ix_tutors_tierid");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -1086,8 +759,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("AccountHolderName")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
                         .HasColumnName("accountholdername");
 
                     b.Property<string>("AccountNumber")
@@ -1096,15 +769,29 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("accountnumber");
 
+                    b.Property<string>("BankBin")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("bankbin");
+
                     b.Property<string>("BankName")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("bankname");
+
+                    b.Property<string>("BranchName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("branchname");
 
                     b.Property<int>("TutorId")
                         .HasColumnType("integer")
                         .HasColumnName("tutorid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updatedat");
 
                     b.HasKey("TutorBankAccountId")
                         .HasName("pk_tutorbankaccounts");
@@ -1143,6 +830,10 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("userid");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+
+                    b.Property<string>("AvatarPublicId")
+                        .HasColumnType("text")
+                        .HasColumnName("avatarpublicid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1285,27 +976,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("wallettransactions");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Attendance", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Lesson", "Lesson")
-                        .WithMany("Attendances")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_attendances_lessons_lessonid");
-
-                    b.HasOne("DataAccessLayer.Entities.Student", "Student")
-                        .WithMany("Attendances")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_attendances_students_studentid");
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Availability", b =>
                 {
                     b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
@@ -1335,12 +1005,6 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_bookings_availabilities_availabilityid");
 
-                    b.HasOne("DataAccessLayer.Entities.Parent", "Parent")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_bookings_parents_parentid");
-
                     b.HasOne("DataAccessLayer.Entities.Student", "Student")
                         .WithMany("Bookings")
                         .HasForeignKey("StudentId")
@@ -1353,8 +1017,6 @@ namespace DataAccessLayer.Migrations
                         .HasConstraintName("fk_bookings_users_userid");
 
                     b.Navigation("Availability");
-
-                    b.Navigation("Parent");
 
                     b.Navigation("Student");
 
@@ -1394,72 +1056,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Essay", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Homework", "Homework")
-                        .WithMany("Essays")
-                        .HasForeignKey("HomeworkId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_essays_homeworks_homeworkid");
-
-                    b.Navigation("Homework");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.EssayAnswer", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Essay", "Essay")
-                        .WithMany("EssayAnswers")
-                        .HasForeignKey("EssayId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_essayanswers_essays_essayid");
-
-                    b.HasOne("DataAccessLayer.Entities.Submission", "Submission")
-                        .WithMany("EssayAnswers")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_essayanswers_submissions_submissionid");
-
-                    b.Navigation("Essay");
-
-                    b.Navigation("Submission");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.FavoriteTutor", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Parent", "Parent")
-                        .WithMany("FavoriteTutors")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritetutors_parents_parentid");
-
-                    b.HasOne("DataAccessLayer.Entities.Tutor", "Tutor")
-                        .WithMany("FavoriteTutors")
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritetutors_tutors_tutorid");
-
-                    b.Navigation("Parent");
-
-                    b.Navigation("Tutor");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Homework", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Booking", "Booking")
-                        .WithMany("Homeworks")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_homeworks_bookings_bookingid");
-
-                    b.Navigation("Booking");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Lesson", b =>
                 {
                     b.HasOne("DataAccessLayer.Entities.Booking", "Booking")
@@ -1481,6 +1077,26 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_materials_availabilities_availabilityid");
 
+                    b.HasOne("DataAccessLayer.Entities.MaterialSection", "Section")
+                        .WithMany("Materials")
+                        .HasForeignKey("MaterialSectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_materials_materialsections_materialsectionid");
+
+                    b.Navigation("Availability");
+
+                    b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.MaterialSection", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.Availability", "Availability")
+                        .WithMany("MaterialSections")
+                        .HasForeignKey("AvailabilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_materialsections_availabilities_availabilityid");
+
                     b.Navigation("Availability");
                 });
 
@@ -1501,56 +1117,6 @@ namespace DataAccessLayer.Migrations
                         .HasConstraintName("fk_messages_users_userid");
 
                     b.Navigation("Conversation");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.MultipleChoiceQuestion", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Homework", "Homework")
-                        .WithMany("MultipleChoiceQuestions")
-                        .HasForeignKey("HomeworkId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_multiplechoicequestions_homeworks_homeworkid");
-
-                    b.Navigation("Homework");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.MultipleChoiceQuestionAnswer", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.MultipleChoiceQuestion", null)
-                        .WithMany("Answers")
-                        .HasForeignKey("MultipleChoiceQuestionId")
-                        .HasConstraintName("fk_multiplechoicequestionanswers_multiplechoicequestions_multi~");
-
-                    b.HasOne("DataAccessLayer.Entities.QuestionOption", "QuestionOption")
-                        .WithMany("Answers")
-                        .HasForeignKey("QuestionOptionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_multiplechoicequestionanswers_questionoptionss_questionopti~");
-
-                    b.HasOne("DataAccessLayer.Entities.Submission", "Submission")
-                        .WithMany("MultipleChoiceQuestionAnswers")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_multiplechoicequestionanswers_submissions_submissionid");
-
-                    b.Navigation("QuestionOption");
-
-                    b.Navigation("Submission");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Parent", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.User", "User")
-                        .WithOne("Parent")
-                        .HasForeignKey("DataAccessLayer.Entities.Parent", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_parents_users_userid");
 
                     b.Navigation("User");
                 });
@@ -1587,85 +1153,8 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("WalletTransaction");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.ProgressReport", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Lesson", "Lesson")
-                        .WithMany("ProgressReports")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_progressreports_lessons_lessonid");
-
-                    b.HasOne("DataAccessLayer.Entities.Student", "Student")
-                        .WithMany("ProgressReports")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_progressreports_students_studentid");
-
-                    b.HasOne("DataAccessLayer.Entities.Tutor", "Tutor")
-                        .WithMany("ProgressReports")
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_progressreports_tutors_tutorid");
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Tutor");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuestionOption", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.MultipleChoiceQuestion", "MultipleChoiceQuestion")
-                        .WithMany("QuestionOptions")
-                        .HasForeignKey("MultipleChoiceQuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_questionoptionss_multiplechoicequestions_multiplechoiceques~");
-
-                    b.Navigation("MultipleChoiceQuestion");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Review", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Booking", "Booking")
-                        .WithMany("Reviews")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_reviews_bookings_bookingid");
-
-                    b.HasOne("DataAccessLayer.Entities.Parent", "Parent")
-                        .WithMany("Reviews")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_reviews_parents_parentid");
-
-                    b.HasOne("DataAccessLayer.Entities.Tutor", "Tutor")
-                        .WithMany("Reviews")
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_reviews_tutors_tutorid");
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Parent");
-
-                    b.Navigation("Tutor");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Student", b =>
                 {
-                    b.HasOne("DataAccessLayer.Entities.Parent", "Parent")
-                        .WithMany("Students")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_students_parents_parentid");
-
                     b.HasOne("DataAccessLayer.Entities.User", "User")
                         .WithOne("Student")
                         .HasForeignKey("DataAccessLayer.Entities.Student", "UserId")
@@ -1673,48 +1162,17 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_students_users_userid");
 
-                    b.Navigation("Parent");
-
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Submission", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Homework", "Homework")
-                        .WithMany("Submissions")
-                        .HasForeignKey("HomeworkId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_submissions_homeworks_homeworkid");
-
-                    b.HasOne("DataAccessLayer.Entities.Student", "Student")
-                        .WithMany("Submissions")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_submissions_students_studentid");
-
-                    b.Navigation("Homework");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Tutor", b =>
                 {
-                    b.HasOne("DataAccessLayer.Entities.Tier", "Tier")
-                        .WithMany("Tutors")
-                        .HasForeignKey("TierId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_tutors_tiers_tierid");
-
                     b.HasOne("DataAccessLayer.Entities.User", "User")
                         .WithOne("Tutor")
                         .HasForeignKey("DataAccessLayer.Entities.Tutor", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_tutors_users_userid");
-
-                    b.Navigation("Tier");
 
                     b.Navigation("User");
                 });
@@ -1780,18 +1238,16 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Navigation("Bookings");
 
+                    b.Navigation("MaterialSections");
+
                     b.Navigation("Materials");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Booking", b =>
                 {
-                    b.Navigation("Homeworks");
-
                     b.Navigation("Lessons");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Conversation", b =>
@@ -1801,59 +1257,14 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Essay", b =>
+            modelBuilder.Entity("DataAccessLayer.Entities.MaterialSection", b =>
                 {
-                    b.Navigation("EssayAnswers");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Homework", b =>
-                {
-                    b.Navigation("Essays");
-
-                    b.Navigation("MultipleChoiceQuestions");
-
-                    b.Navigation("Submissions");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Lesson", b =>
-                {
-                    b.Navigation("Attendances");
-
-                    b.Navigation("ProgressReports");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.MultipleChoiceQuestion", b =>
-                {
-                    b.Navigation("Answers");
-
-                    b.Navigation("QuestionOptions");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Parent", b =>
-                {
-                    b.Navigation("Bookings");
-
-                    b.Navigation("FavoriteTutors");
-
-                    b.Navigation("Reviews");
-
-                    b.Navigation("Students");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuestionOption", b =>
-                {
-                    b.Navigation("Answers");
+                    b.Navigation("Materials");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Student", b =>
                 {
-                    b.Navigation("Attendances");
-
                     b.Navigation("Bookings");
-
-                    b.Navigation("ProgressReports");
-
-                    b.Navigation("Submissions");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>
@@ -1863,18 +1274,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("TutorSubjects");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.Submission", b =>
-                {
-                    b.Navigation("EssayAnswers");
-
-                    b.Navigation("MultipleChoiceQuestionAnswers");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.Tier", b =>
-                {
-                    b.Navigation("Tutors");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.Tutor", b =>
                 {
                     b.Navigation("Availabilities");
@@ -1882,13 +1281,7 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("BankAccount")
                         .IsRequired();
 
-                    b.Navigation("FavoriteTutors");
-
                     b.Navigation("Payouts");
-
-                    b.Navigation("ProgressReports");
-
-                    b.Navigation("Reviews");
 
                     b.Navigation("TutorSubjects");
 
@@ -1901,9 +1294,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("ConversationUsers");
 
                     b.Navigation("Messages");
-
-                    b.Navigation("Parent")
-                        .IsRequired();
 
                     b.Navigation("Student")
                         .IsRequired();

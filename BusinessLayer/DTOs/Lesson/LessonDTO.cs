@@ -71,7 +71,6 @@ namespace BusinessLayer.DTOs.Lesson
         public string Status { get; set; } = string.Empty;
         public string MeetingLink { get; set; } = string.Empty;
 
-        public bool CanTakeAttendance { get; set; }
         public bool CanComplete { get; set; }
 
         public List<LessonStudentResponse> Students { get; set; } = new();
@@ -83,7 +82,6 @@ namespace BusinessLayer.DTOs.Lesson
         public int BookingId { get; set; }
         public int UserId { get; set; }
         public string StudentName { get; set; } = string.Empty;
-        public string AttendanceStatus { get; set; } = string.Empty;
         public string LessonStatus { get; set; } = string.Empty;
     }
 }
