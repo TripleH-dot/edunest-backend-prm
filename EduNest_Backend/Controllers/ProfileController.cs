@@ -139,7 +139,7 @@ namespace EduNest_Backend.Controllers
         [HttpPut("avatar")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<AvatarResponse>> UploadAvatar(
-    [FromForm] IFormFile avatar)
+            IFormFile avatar)
         {
             var userId = CurrentUserId();
 
