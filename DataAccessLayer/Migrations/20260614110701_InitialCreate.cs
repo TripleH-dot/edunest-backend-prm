@@ -484,13 +484,7 @@ namespace DataAccessLayer.Migrations
                     approvedat = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     paidat = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    payoutmethod = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    payoschireferenceid = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
-                    payoschibatchid = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
-                    payoschipayoutitemid = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
-                    payoschiapprovalstate = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    payoschitransactionstate = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    payoschifailurereason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
+                    payoutmethod = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {

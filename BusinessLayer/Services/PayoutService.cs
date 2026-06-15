@@ -159,13 +159,6 @@ namespace BusinessLayer.Services
                 ApprovedAt = p.ApprovedAt,
                 PaidAt = p.PaidAt,
 
-                PayOSChiReferenceId = p.PayOSChiReferenceId,
-                PayOSChiBatchId = p.PayOSChiBatchId,
-                PayOSChiPayoutItemId = p.PayOSChiPayoutItemId,
-                PayOSChiApprovalState = p.PayOSChiApprovalState,
-                PayOSChiTransactionState = p.PayOSChiTransactionState,
-                PayOSChiFailureReason = p.PayOSChiFailureReason,
-
                 TutorBankName = bank?.BankName,
                 TutorBankBin = bank?.BankBin,
                 TutorAccountNumber = bank?.AccountNumber,

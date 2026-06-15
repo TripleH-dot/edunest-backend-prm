@@ -547,36 +547,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paidat");
 
-                    b.Property<string>("PayOSChiApprovalState")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("payoschiapprovalstate");
-
-                    b.Property<string>("PayOSChiBatchId")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("payoschibatchid");
-
-                    b.Property<string>("PayOSChiFailureReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("payoschifailurereason");
-
-                    b.Property<string>("PayOSChiPayoutItemId")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("payoschipayoutitemid");
-
-                    b.Property<string>("PayOSChiReferenceId")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("payoschireferenceid");
-
-                    b.Property<string>("PayOSChiTransactionState")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("payoschitransactionstate");
-
                     b.Property<string>("PayoutMethod")
                         .IsRequired()
                         .HasMaxLength(50)

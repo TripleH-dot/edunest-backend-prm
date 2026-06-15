@@ -8,11 +8,9 @@ using BusinessLayer.DTOs.Payment;
 using BusinessLayer.DTOs.Subject;
 using BusinessLayer.DTOs.Tutor;
 using BusinessLayer.IServices;
-using BusinessLayer.Settings;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace BusinessLayer.Services
 {
@@ -21,21 +19,15 @@ namespace BusinessLayer.Services
         private readonly EduNestDbContext _db;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IAdminTutorRepository _adminTutorRepository;
-        private readonly IPayOSChiPayoutService _payOSChiPayoutService;
-        private readonly PayOSChiSetting _payOSChiSetting;
 
         public AdminService(
             EduNestDbContext db,
             ICloudinaryService cloudinaryService,
-            IAdminTutorRepository adminTutorRepository,
-            IPayOSChiPayoutService payOSChiPayoutService,
-            IOptions<PayOSChiSetting> payOSChiSetting)
+            IAdminTutorRepository adminTutorRepository)
         {
             _db = db;
             _cloudinaryService = cloudinaryService;
             _adminTutorRepository = adminTutorRepository;
-            _payOSChiPayoutService = payOSChiPayoutService;
-            _payOSChiSetting = payOSChiSetting.Value;
         }
 
         public async Task TrackDownloadAsync(TrackAppMetricRequest request)
@@ -114,16 +106,11 @@ namespace BusinessLayer.Services
                 ApprovedTutors = await _db.Tutors.CountAsync(t => t.IsVerified),
 
                 PendingPayouts = await _db.Payouts.CountAsync(p =>
-                    p.Status == "Pending" ||
-                    p.Status == "Processing" ||
-                    p.Status == "ManualQrRequired"),
+                    p.Status == "Pending"),
 
                 PendingPayoutAmount = await _db.Payouts
-    .Where(p =>
-        p.Status == "Pending" ||
-        p.Status == "Processing" ||
-        p.Status == "ManualQrRequired")
-    .SumAsync(p => p.Amount),
+                    .Where(p => p.Status == "Pending")
+                    .SumAsync(p => p.Amount),
 
                 CompletedLessons = completedLessons.Count,
                 GrossLessonRevenue = Math.Round(grossLessonRevenue, 2),
@@ -309,13 +296,6 @@ namespace BusinessLayer.Services
                 PayoutMethod = payout.PayoutMethod,
 
                 ApprovedAt = payout.ApprovedAt,
-
-                PayOSChiReferenceId = payout.PayOSChiReferenceId,
-                PayOSChiBatchId = payout.PayOSChiBatchId,
-                PayOSChiPayoutItemId = payout.PayOSChiPayoutItemId,
-                PayOSChiApprovalState = payout.PayOSChiApprovalState,
-                PayOSChiTransactionState = payout.PayOSChiTransactionState,
-                PayOSChiFailureReason = payout.PayOSChiFailureReason,
             };
         }
 
@@ -335,9 +315,7 @@ namespace BusinessLayer.Services
                 .FirstOrDefaultAsync(p => p.PayoutId == payoutId)
                 ?? throw new KeyNotFoundException("Payout not found.");
 
-            if (payout.Status != "Pending" &&
-                payout.Status != "Processing" &&
-                payout.Status != "ManualQrRequired")
+            if (payout.Status != "Pending")
             {
                 throw new InvalidOperationException(
                     $"This payout is already {payout.Status} and cannot be updated again.");
@@ -417,170 +395,6 @@ namespace BusinessLayer.Services
             return ToTutorVerificationResponse(tutor);
         }
 
-        public async Task<PayoutResponse> ApprovePayoutWithPayOSChiAsync(int payoutId)
-        {
-            await using var transaction = await _db.Database.BeginTransactionAsync();
-
-            var payout = await _db.Payouts
-                .Include(p => p.Tutor)
-                    .ThenInclude(t => t.User)
-                .Include(p => p.Tutor)
-                    .ThenInclude(t => t.Wallet)
-                .Include(p => p.Tutor)
-                    .ThenInclude(t => t.BankAccount)
-                .FirstOrDefaultAsync(p => p.PayoutId == payoutId)
-                ?? throw new KeyNotFoundException("Payout not found.");
-
-            if (payout.Status != "Pending")
-            {
-                throw new InvalidOperationException(
-                    $"Only pending payout can be approved. Current status: {payout.Status}");
-            }
-
-            var wallet = payout.Tutor.Wallet
-                ?? throw new InvalidOperationException("Tutor wallet not found.");
-
-            var bank = payout.Tutor.BankAccount;
-
-            if (bank == null)
-                throw new InvalidOperationException("Tutor has not added bank information.");
-
-            if (string.IsNullOrWhiteSpace(bank.BankBin))
-                throw new InvalidOperationException("Tutor bank BIN is missing.");
-
-            if (string.IsNullOrWhiteSpace(bank.AccountNumber))
-                throw new InvalidOperationException("Tutor account number is missing.");
-
-            if (payout.Amount <= 0)
-                throw new InvalidOperationException("Invalid payout amount.");
-
-            payout.Status = "Processing";
-            payout.PayoutMethod = "PayOSChi";
-            payout.ApprovedAt = DateTime.UtcNow;
-            payout.PayOSChiFailureReason = null;
-
-            await _db.SaveChangesAsync();
-
-            try
-            {
-                var result = await _payOSChiPayoutService.CreateTutorPayoutAsync(
-                    payoutRequestId: payout.PayoutId,
-                    amount: Convert.ToInt32(payout.Amount),
-                    tutorBankBin: bank.BankBin,
-                    tutorAccountNumber: bank.AccountNumber,
-                    description: BuildPayOSChiDescription(payout.PayoutId));
-
-                payout.PayOSChiReferenceId = result.ReferenceId;
-                payout.PayOSChiBatchId = result.BatchId;
-                payout.PayOSChiPayoutItemId = result.PayoutItemId;
-                payout.PayOSChiApprovalState = result.ApprovalState;
-                payout.PayOSChiTransactionState = result.TransactionState;
-
-                if (IsPayOSSuccess(result.ApprovalState) ||
-                    IsPayOSSuccess(result.TransactionState))
-                {
-                    wallet.PendingBalance = Math.Max(0, wallet.PendingBalance - payout.Amount);
-
-                    payout.Status = "Paid";
-                    payout.PaidAt = DateTime.UtcNow;
-
-                    _db.WalletTransactions.Add(new WalletTransaction
-                    {
-                        WalletId = wallet.WalletId,
-                        Type = "PayoutPaid",
-                        Amount = payout.Amount,
-                        Description = $"Payout #{payout.PayoutId} was paid automatically by payOS Chi.",
-                        CreatedAt = DateTime.UtcNow
-                    });
-                }
-                else
-                {
-                    payout.Status = "Processing";
-                }
-
-                await _db.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return ToPayoutResponse(payout);
-            }
-            catch (Exception ex)
-            {
-                if (!_payOSChiSetting.FallbackToQrWhenFailed)
-                    throw;
-
-                payout.Status = "ManualQrRequired";
-                payout.PayoutMethod = "ManualQr";
-                payout.PayOSChiFailureReason = BuildPayOSChiFailureReason(ex);
-
-                await _db.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return ToPayoutResponse(payout);
-            }
-        }
-
-        private string BuildPayOSChiDescription(int payoutId)
-        {
-            var prefix = string.IsNullOrWhiteSpace(_payOSChiSetting.DefaultDescriptionPrefix)
-                ? "EDUNEST PAYOUT"
-                : _payOSChiSetting.DefaultDescriptionPrefix.Trim();
-
-            return $"{prefix} {payoutId}";
-        }
-
-        private static string BuildPayOSChiFailureReason(Exception ex)
-        {
-            var parts = new List<string>
-            {
-                $"{ex.GetType().Name}: {ex.Message}"
-            };
-
-            foreach (var propertyName in new[]
-                     {
-                         "StatusCode",
-                         "Code",
-                         "ErrorCode",
-                         "ResponseCode",
-                         "ResponseBody",
-                         "RawResponse",
-                         "Details"
-                     })
-            {
-                var property = ex.GetType().GetProperty(propertyName);
-                var value = property?.GetValue(ex);
-
-                if (value == null)
-                    continue;
-
-                var text = value.ToString();
-
-                if (!string.IsNullOrWhiteSpace(text))
-                    parts.Add($"{propertyName}: {text}");
-            }
-
-            if (ex.InnerException != null)
-            {
-                parts.Add(
-                    $"Inner {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-            }
-
-            var reason = string.Join(" | ", parts);
-
-            return reason.Length <= 1000
-                ? reason
-                : reason[..1000];
-        }
-
-        private static bool IsPayOSSuccess(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return false;
-
-            return value.Equals("SUCCEEDED", StringComparison.OrdinalIgnoreCase) ||
-                   value.Equals("SUCCESS", StringComparison.OrdinalIgnoreCase) ||
-                   value.Equals("PAID", StringComparison.OrdinalIgnoreCase);
-        }
-
         private TutorVerificationResponse ToTutorVerificationResponse(Tutor tutor)
         {
             return new TutorVerificationResponse
@@ -638,13 +452,6 @@ namespace BusinessLayer.Services
                 RequestedAt = payout.RequestedAt,
                 ApprovedAt = payout.ApprovedAt,
                 PaidAt = payout.PaidAt,
-
-                PayOSChiReferenceId = payout.PayOSChiReferenceId,
-                PayOSChiBatchId = payout.PayOSChiBatchId,
-                PayOSChiPayoutItemId = payout.PayOSChiPayoutItemId,
-                PayOSChiApprovalState = payout.PayOSChiApprovalState,
-                PayOSChiTransactionState = payout.PayOSChiTransactionState,
-                PayOSChiFailureReason = payout.PayOSChiFailureReason,
 
                 TutorBankName = bank?.BankName,
                 TutorBankBin = bank?.BankBin,

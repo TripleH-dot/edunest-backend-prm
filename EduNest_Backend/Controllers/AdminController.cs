@@ -135,20 +135,5 @@ namespace EduNest_Backend.Controllers
                 request.IsActive));
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPatch("payouts/{payoutId:int}/approve-payos-chi")]
-        public async Task<ActionResult<PayoutResponse>> ApprovePayoutWithPayOSChi(
-    int payoutId)
-        {
-            try
-            {
-                var result = await _adminService.ApprovePayoutWithPayOSChiAsync(payoutId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
     }
 }

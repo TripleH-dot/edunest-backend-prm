@@ -34,6 +34,5 @@ namespace BusinessLayer.IServices
         Task<TutorVerificationResponse> UpdateTutorAccountStatusAsync(
     int tutorId,
     bool isActive);
-        Task<PayoutResponse> ApprovePayoutWithPayOSChiAsync(int payoutId);
     }
 }

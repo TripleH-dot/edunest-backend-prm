@@ -92,9 +92,6 @@ builder.Services.Configure<EmailSetting>(
 builder.Services.Configure<PayOSSetting>(
     builder.Configuration.GetSection(PayOSSetting.SectionName));
 
-builder.Services.Configure<PayOSChiSetting>(
-    builder.Configuration.GetSection(PayOSChiSetting.SectionName));
-
 builder.Services.Configure<CloudinarySetting>(
     builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<CloudflareR2Setting>(
@@ -139,7 +136,6 @@ builder.Services.AddScoped<IR2StorageService, R2StorageService>();
 builder.Services.AddScoped<IMeetingLinkService, GoogleMeetLinkService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-builder.Services.AddScoped<IPayOSChiPayoutService, PayOSChiPayoutService>();
 #endregion
 
 builder.Services.AddHostedService<BookingExpiryBackgroundService>();
@@ -219,10 +215,13 @@ Directory.CreateDirectory(Path.Combine(uploadsRoot, "materials"));
 app.UseForwardedHeaders();
 app.UseMiddleware<ApiExceptionHandlingMiddleware>();
 
+// Cho phép dùng Swagger ở cả môi trường Production (Render)
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // ...
 }
 
 app.UseHttpsRedirection();

@@ -29,29 +29,11 @@ namespace DataAccessLayer.Entities
 
         [Required, MaxLength(50)]
         public string Status { get; set; } = "Pending";
-        // Pending / Processing / Paid / ManualQrRequired / Rejected / Failed
+        // Pending / Paid / Rejected / Failed
 
         [Required, MaxLength(50)]
         public string PayoutMethod { get; set; } = "ManualQr";
-        // ManualQr / PayOSChi
-
-        [MaxLength(150)]
-        public string? PayOSChiReferenceId { get; set; }
-
-        [MaxLength(150)]
-        public string? PayOSChiBatchId { get; set; }
-
-        [MaxLength(150)]
-        public string? PayOSChiPayoutItemId { get; set; }
-
-        [MaxLength(100)]
-        public string? PayOSChiApprovalState { get; set; }
-
-        [MaxLength(100)]
-        public string? PayOSChiTransactionState { get; set; }
-
-        [MaxLength(1000)]
-        public string? PayOSChiFailureReason { get; set; }
+        // ManualQr
 
         [ForeignKey(nameof(TutorId))]
         public virtual Tutor Tutor { get; set; } = null!;
