@@ -457,6 +457,86 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("messages");
                 });
 
+            modelBuilder.Entity("DataAccessLayer.Entities.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("notificationid");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<int?>("AvailabilityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("availabilityid");
+
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bookingid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdat");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isread");
+
+                    b.Property<int?>("LessonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("lessonid");
+
+                    b.Property<int?>("MaterialId")
+                        .HasColumnType("integer")
+                        .HasColumnName("materialid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<int?>("PaymentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("paymentid");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("readat");
+
+                    b.Property<string>("ReferenceKey")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("referencekey");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.HasKey("NotificationId")
+                        .HasName("pk_notifications");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt")
+                        .HasDatabaseName("ix_notifications_userid_isread_createdat");
+
+                    b.HasIndex("UserId", "Type", "ReferenceKey")
+                        .HasDatabaseName("ix_notifications_userid_type_referencekey");
+
+                    b.ToTable("notifications");
+                });
+
             modelBuilder.Entity("DataAccessLayer.Entities.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -1088,6 +1168,18 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DataAccessLayer.Entities.Notification", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_users_userid");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataAccessLayer.Entities.Payment", b =>
                 {
                     b.HasOne("DataAccessLayer.Entities.Booking", "Booking")
@@ -1261,6 +1353,8 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("ConversationUsers");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("Student")
                         .IsRequired();

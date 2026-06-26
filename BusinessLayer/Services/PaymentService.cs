@@ -21,15 +21,18 @@ namespace BusinessLayer.Services
         private readonly EduNestDbContext _db;
         private readonly PayOSSetting _payOs;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly INotificationService _notificationService;
 
         public PaymentService(
             EduNestDbContext db,
             IOptions<PayOSSetting> payOs,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            INotificationService notificationService)
         {
             _db = db;
             _payOs = payOs.Value;
             _httpClientFactory = httpClientFactory;
+            _notificationService = notificationService;
         }
 
         public async Task<CreatePaymentResponse> CreatePayOsPaymentAsync(int userId, int bookingId)
@@ -282,6 +285,7 @@ namespace BusinessLayer.Services
             payment.Booking.Status = "Confirmed";
 
             await EnsureLessonsForBookingAsync(payment.Booking);
+            await _notificationService.NotifyPaymentSucceededAsync(payment);
 
             await _db.SaveChangesAsync();
         }

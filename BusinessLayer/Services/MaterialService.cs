@@ -21,15 +21,18 @@ namespace BusinessLayer.Services
         private readonly EduNestDbContext _db;
         private readonly IWebHostEnvironment _environment;
         private readonly IR2StorageService _r2Storage;
+        private readonly INotificationService _notificationService;
 
         public MaterialService(
             EduNestDbContext db,
             IWebHostEnvironment environment,
-            IR2StorageService r2Storage)
+            IR2StorageService r2Storage,
+            INotificationService notificationService)
         {
             _db = db;
             _environment = environment;
             _r2Storage = r2Storage;
+            _notificationService = notificationService;
         }
 
         public async Task<List<MaterialSectionResponse>> GetByAvailabilityAsync(int userId, int availabilityId)
@@ -312,6 +315,7 @@ namespace BusinessLayer.Services
 
             _db.Materials.Add(material);
             await _db.SaveChangesAsync();
+            await _notificationService.NotifyMaterialUploadedAsync(material);
 
             return ToMaterialResponse(material);
         }

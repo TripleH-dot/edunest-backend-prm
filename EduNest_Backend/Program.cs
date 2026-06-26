@@ -132,6 +132,7 @@ builder.Services.AddScoped<IPayoutService, PayoutService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IR2StorageService, R2StorageService>();
 builder.Services.AddScoped<IMeetingLinkService, GoogleMeetLinkService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
@@ -139,6 +140,7 @@ builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 #endregion
 
 builder.Services.AddHostedService<BookingExpiryBackgroundService>();
+builder.Services.AddHostedService<LessonNotificationBackgroundService>();
 
 builder.Services.AddHttpClient();
 

@@ -31,6 +31,7 @@ namespace DataAccessLayer.Entities
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<ConversationUser> ConversationUsers { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         // ── Wallet & Payout ───────────────────────────────────────────────────
         public DbSet<Wallet> Wallets { get; set; }
@@ -192,6 +193,13 @@ namespace DataAccessLayer.Entities
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ── Notification ─────────────────────────────────────────────────
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // ── WalletTransaction ─────────────────────────────────────────────
             modelBuilder.Entity<WalletTransaction>()
                 .HasOne(wt => wt.Wallet)
@@ -234,6 +242,12 @@ namespace DataAccessLayer.Entities
 
             modelBuilder.Entity<AppMetric>()
     .HasIndex(x => new { x.Type, x.DeviceId });
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt });
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.Type, n.ReferenceKey });
 
             // ── PostgreSQL lowercase naming ───────────────────────────────────  ← ADD HERE
             foreach (var entity in modelBuilder.Model.GetEntityTypes())
