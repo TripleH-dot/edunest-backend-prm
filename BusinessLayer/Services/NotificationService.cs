@@ -87,8 +87,8 @@ namespace BusinessLayer.Services
                 .FirstAsync(b => b.BookingId == payment.BookingId);
 
             var learnerUserId = booking.UserId ?? booking.Student?.UserId;
-            var learnerName = booking.User?.Name
-                ?? booking.Student?.User?.Name
+            var learnerEmail = booking.User?.Email
+                ?? booking.Student?.User?.Email
                 ?? $"User #{learnerUserId}";
             var courseName = booking.Availability.Subject?.Name
                 ?? $"Course #{booking.AvailabilityId}";
@@ -112,10 +112,10 @@ namespace BusinessLayer.Services
             await AddIfMissingAsync(new Notification
             {
                 UserId = tutorUserId,
-                Type = TutorStudentJoined,
+                Type = StudentCoursePaid,
                 Title = "Có học viên mới tham gia khóa học",
-                Message = $"{learnerName} đã thanh toán và tham gia khóa học {courseName}.",
-                ReferenceKey = $"{TutorStudentJoined}:{payment.PaymentId}",
+                Message = $"{learnerEmail} đã thanh toán và tham gia khóa học {courseName}.",
+                ReferenceKey = $"{StudentCoursePaid}:tutor:{payment.PaymentId}",
                 BookingId = booking.BookingId,
                 AvailabilityId = booking.AvailabilityId,
                 PaymentId = payment.PaymentId
@@ -192,7 +192,7 @@ namespace BusinessLayer.Services
                 var availability = lesson.Booking.Availability;
                 var courseName = availability.Subject?.Name
                     ?? $"Course #{availability.AvailabilityId}";
-                var scheduleText = lesson.ScheduleTime.ToString("HH:mm 'UTC'");
+                var scheduleText = availability.StartTime.ToString(@"hh\:mm");
                 var learnerUserId = lesson.Booking.UserId ?? lesson.Booking.Student?.UserId;
 
                 if (learnerUserId.HasValue)
