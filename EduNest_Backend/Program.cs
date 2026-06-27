@@ -179,11 +179,11 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter: Bearer {your token here}\n\nExample: Bearer eyJhbGci..."
+        Description = "Enter only your JWT access token. Swagger will add the Bearer prefix automatically."
     });
 
     // ── Step 2: Apply it globally to all endpoints ────────────────────────
