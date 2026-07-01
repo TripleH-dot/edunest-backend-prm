@@ -40,10 +40,7 @@ namespace BusinessLayer.Mappings
             TypeAdapterConfig<Tutor, TutorResponseDTO>.NewConfig()
                 .Map(dest => dest.TutorId, src => src.TutorId)
                 .Map(dest => dest.UserId, src => src.UserId)
-                .Map(dest => dest.Bio, src => src.Bio)
-                .Map(dest => dest.Revenue, src => src.Revenue)
-                .Map(dest => dest.Rating, src => src.Rating)
-                .Map(dest => dest.IsVerified, src => src.IsVerified);
+                .Map(dest => dest.Bio, src => src.Bio);
             // Name, Email, Phone mapped manually in service
         }
     }

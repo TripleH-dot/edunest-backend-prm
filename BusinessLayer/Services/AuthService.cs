@@ -270,10 +270,7 @@ namespace BusinessLayer.Services
                     var tutor = new Tutor
                     {
                         UserId = user.UserId,
-                        Bio = dto.Bio ?? string.Empty,
-                        Revenue = 0,
-                        Rating = 0,
-                        IsVerified = false  // Tutors need admin approval
+                        Bio = dto.Bio ?? string.Empty
                     };
                     await _tutorRepository.AddAsync(tutor);
                     await _tutorRepository.SaveChangesAsync();

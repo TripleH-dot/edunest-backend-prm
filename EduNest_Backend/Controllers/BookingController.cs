@@ -39,18 +39,6 @@ namespace EduNest_Backend.Controllers
             return Ok(await _bookingService.CancelBookingAsync(CurrentUserId(), bookingId));
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost("expire-pending")]
-        public async Task<ActionResult<object>> ExpirePendingBookings()
-        {
-            var count = await _bookingService.ExpirePendingBookingsAsync();
-
-            return Ok(new
-            {
-                expired = count
-            });
-        }
-
         private int CurrentUserId()
         {
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier)

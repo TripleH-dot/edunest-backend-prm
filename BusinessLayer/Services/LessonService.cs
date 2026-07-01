@@ -8,16 +8,13 @@ namespace BusinessLayer.Services
     public sealed class LessonService : ILessonService
     {
         private readonly EduNestDbContext _db;
-        private readonly IWalletService _walletService;
         private readonly ICloudinaryService _cloudinaryService;
 
         public LessonService(
             EduNestDbContext db,
-            IWalletService walletService,
             ICloudinaryService cloudinaryService)
         {
             _db = db;
-            _walletService = walletService;
             _cloudinaryService = cloudinaryService;
         }
 
@@ -188,8 +185,6 @@ namespace BusinessLayer.Services
 
             lesson.Status = "Completed";
 
-            await _walletService.CreditTutorForLessonAsync(lesson);
-
             var allLessons = await _db.Lessons
                 .Where(l => l.BookingId == lesson.BookingId)
                 .ToListAsync();
@@ -226,8 +221,6 @@ namespace BusinessLayer.Services
                     continue;
 
                 item.Status = "Completed";
-
-                await _walletService.CreditTutorForLessonAsync(item);
             }
 
             var bookingIds = groupLessons

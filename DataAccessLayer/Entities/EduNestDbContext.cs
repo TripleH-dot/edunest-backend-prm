@@ -33,12 +33,6 @@ namespace DataAccessLayer.Entities
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
-        // ── Wallet & Payout ───────────────────────────────────────────────────
-        public DbSet<Wallet> Wallets { get; set; }
-        public DbSet<WalletTransaction> WalletTransactions { get; set; }
-        public DbSet<Payout> Payouts { get; set; }
-        public DbSet<TutorBankAccount> TutorBankAccounts { get; set; }
-
         //metric
         public DbSet<AppMetric> AppMetrics { get; set; }
 
@@ -65,20 +59,6 @@ namespace DataAccessLayer.Entities
                 .WithOne(u => u.Student)
                 .HasForeignKey<Student>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // ── Tutor → Wallet (1:1) ──────────────────────────────────────────
-            modelBuilder.Entity<Wallet>()
-                .HasOne(w => w.Tutor)
-                .WithOne(t => t.Wallet)
-                .HasForeignKey<Wallet>(w => w.TutorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── Tutor → BankAccount (1:1) ─────────────────────────────────────
-            modelBuilder.Entity<TutorBankAccount>()
-                .HasOne(b => b.Tutor)
-                .WithOne(t => t.BankAccount)
-                .HasForeignKey<TutorBankAccount>(b => b.TutorId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // ── TutorSubject ──────────────────────────────────────────────────
             modelBuilder.Entity<TutorSubject>()
@@ -199,26 +179,6 @@ namespace DataAccessLayer.Entities
                 .WithMany(u => u.Notifications)
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // ── WalletTransaction ─────────────────────────────────────────────
-            modelBuilder.Entity<WalletTransaction>()
-                .HasOne(wt => wt.Wallet)
-                .WithMany(w => w.WalletTransactions)
-                .HasForeignKey(wt => wt.WalletId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ── Payout ────────────────────────────────────────────────────────
-            modelBuilder.Entity<Payout>()
-                .HasOne(p => p.Tutor)
-                .WithMany(t => t.Payouts)
-                .HasForeignKey(p => p.TutorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Payout>()
-                .HasOne(p => p.WalletTransaction)
-                .WithOne(wt => wt.Payout)
-                .HasForeignKey<Payout>(p => p.WalletTransactionId)
-                .OnDelete(DeleteBehavior.SetNull);
 
             // ── Indexes ───────────────────────────────────────────────────────
             modelBuilder.Entity<User>()

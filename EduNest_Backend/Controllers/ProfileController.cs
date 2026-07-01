@@ -37,7 +37,6 @@ namespace EduNest_Backend.Controllers
             if (user.Role == "Tutor")
             {
                 tutor = await _db.Tutors
-                    .Include(t => t.BankAccount)
                     .FirstOrDefaultAsync(t => t.UserId == userId);
             }
 
@@ -67,7 +66,6 @@ namespace EduNest_Backend.Controllers
             if (user.Role == "Tutor")
             {
                 tutor = await _db.Tutors
-                    .Include(t => t.BankAccount)
                     .FirstOrDefaultAsync(t => t.UserId == userId);
 
                 if (tutor != null && request.TutorBio != null)
@@ -75,60 +73,6 @@ namespace EduNest_Backend.Controllers
                     tutor.Bio = request.TutorBio.Trim();
                 }
             }
-
-            await _db.SaveChangesAsync();
-
-            return Ok(ToProfileResponse(user, tutor));
-        }
-
-        [Authorize(Roles = "Tutor")]
-        [HttpPut("tutor-bank-account")]
-        public async Task<ActionResult<MyProfileResponse>> UpdateTutorBankAccount(
-            [FromBody] UpdateTutorBankAccountRequest request)
-        {
-            var userId = CurrentUserId();
-
-            var user = await _db.Users
-                .FirstOrDefaultAsync(u => u.UserId == userId && !u.IsDeleted)
-                ?? throw new KeyNotFoundException("User not found.");
-
-            var tutor = await _db.Tutors
-                .Include(t => t.BankAccount)
-                .FirstOrDefaultAsync(t => t.UserId == userId)
-                ?? throw new KeyNotFoundException("Tutor profile not found.");
-
-            if (string.IsNullOrWhiteSpace(request.BankName))
-                return BadRequest(new { message = "Bank name is required." });
-
-            if (string.IsNullOrWhiteSpace(request.AccountNumber))
-                return BadRequest(new { message = "Account number is required." });
-
-            if (string.IsNullOrWhiteSpace(request.AccountHolderName))
-                return BadRequest(new { message = "Account holder name is required." });
-
-            var bank = tutor.BankAccount;
-
-            if (bank == null)
-            {
-                bank = new TutorBankAccount
-                {
-                    TutorId = tutor.TutorId
-                };
-
-                _db.Set<TutorBankAccount>().Add(bank);
-                tutor.BankAccount = bank;
-            }
-
-            bank.BankName = request.BankName.Trim();
-            bank.BankBin = string.IsNullOrWhiteSpace(request.BankBin)
-                ? string.Empty
-                : request.BankBin.Trim();
-            bank.AccountNumber = request.AccountNumber.Trim();
-            bank.AccountHolderName = request.AccountHolderName.Trim();
-            bank.BranchName = string.IsNullOrWhiteSpace(request.BranchName)
-                ? null
-                : request.BranchName.Trim();
-            bank.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
 
@@ -233,15 +177,7 @@ namespace EduNest_Backend.Controllers
             300),
 
                 TutorId = tutor?.TutorId,
-                TutorBio = tutor?.Bio,
-                IsVerified = tutor?.IsVerified,
-                VerificationStatus = tutor?.VerificationStatus,
-
-                BankName = tutor?.BankAccount?.BankName,
-                BankBin = tutor?.BankAccount?.BankBin,
-                AccountNumber = tutor?.BankAccount?.AccountNumber,
-                AccountHolderName = tutor?.BankAccount?.AccountHolderName,
-                BranchName = tutor?.BankAccount?.BranchName
+                TutorBio = tutor?.Bio
             };
         }
 
