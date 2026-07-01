@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using BusinessLayer.DTOs.Profile;
 using BusinessLayer.DTOs.Tutor;
 using BusinessLayer.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -124,24 +123,6 @@ namespace EduNest_Backend.Controllers
             {
                 return StatusCode(500, new { message = "An unexpected error occurred." });
             }
-        }
-
-        [Authorize(Roles = "Tutor")]
-        [HttpGet("verification/me")]
-        public async Task<ActionResult<TutorVerificationResponse>> GetMyVerification()
-        {
-            return Ok(await _tutorService.GetMyVerificationAsync(GetCurrentUserId()));
-        }
-
-        [Authorize(Roles = "Tutor")]
-        [HttpPost("verification")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult<TutorVerificationResponse>> SubmitVerification(
-            [FromForm] SubmitTutorVerificationRequest request)
-        {
-            return Ok(await _tutorService.SubmitTutorVerificationAsync(
-                GetCurrentUserId(),
-                request));
         }
 
         // ── Helper ────────────────────────────────────────────────────────────

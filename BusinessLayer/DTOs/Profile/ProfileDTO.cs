@@ -18,14 +18,6 @@ namespace BusinessLayer.DTOs.Profile
 
         public int? TutorId { get; set; }
         public string? TutorBio { get; set; }
-        public bool? IsVerified { get; set; }
-        public string? VerificationStatus { get; set; }
-
-        public string? BankName { get; set; }
-        public string? BankBin { get; set; }
-        public string? AccountNumber { get; set; }
-        public string? AccountHolderName { get; set; }
-        public string? BranchName { get; set; }
     }
 
     public sealed class UpdateMyProfileRequest
@@ -37,33 +29,4 @@ namespace BusinessLayer.DTOs.Profile
         public string? TutorBio { get; set; }
     }
 
-    public sealed class UpdateTutorBankAccountRequest
-    {
-        [Required]
-        public string BankName { get; set; } = string.Empty;
-
-        public string? BankBin { get; set; }
-
-        [Required]
-        public string AccountNumber { get; set; } = string.Empty;
-
-        [Required]
-        public string AccountHolderName { get; set; } = string.Empty;
-
-        public string? BranchName { get; set; }
-    }
-
-    public sealed class TutorBankAccountResponse
-    {
-        public int TutorBankAccountId { get; set; }
-        public int TutorId { get; set; }
-
-        public string BankName { get; set; } = string.Empty;
-        public string? BankBin { get; set; }
-        public string AccountNumber { get; set; } = string.Empty;
-        public string AccountHolderName { get; set; } = string.Empty;
-        public string? BranchName { get; set; }
-
-        public DateTime UpdatedAt { get; set; }
-    }
 }

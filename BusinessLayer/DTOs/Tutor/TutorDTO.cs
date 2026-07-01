@@ -15,9 +15,6 @@ namespace BusinessLayer.DTOs.Tutor
         public string Email { get; set; }
         public string Phone { get; set; }
         public string Bio { get; set; }
-        public decimal Revenue { get; set; }
-        public double Rating { get; set; }
-        public bool IsVerified { get; set; }
     }
 
     public class UpdateTutorDTO
@@ -27,8 +24,4 @@ namespace BusinessLayer.DTOs.Tutor
         public string? Name { get; set; }
     }
 
-    public sealed class UpdateTutorAccountStatusRequest
-    {
-        public bool IsActive { get; set; }
-    }
 }

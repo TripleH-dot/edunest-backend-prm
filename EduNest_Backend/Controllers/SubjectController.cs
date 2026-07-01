@@ -59,7 +59,7 @@ namespace EduNest_Backend.Controllers
 
         // POST /api/subject
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<ActionResult<SubjectResponseDTO>> CreateAsync(
             [FromBody] CreateSubjectDTO dto)
         {
@@ -83,9 +83,10 @@ namespace EduNest_Backend.Controllers
 
         // PUT /api/subject/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<ActionResult<SubjectResponseDTO>> UpdateAsync(
-            int id, [FromBody] UpdateSubjectDTO dto)
+            int id,
+            [FromBody] UpdateSubjectDTO dto)
         {
             try
             {
@@ -112,27 +113,5 @@ namespace EduNest_Backend.Controllers
             }
         }
 
-        // DELETE /api/subject/{id}
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteAsync(int id)
-        {
-            try
-            {
-                if (id <= 0)
-                    return BadRequest(new { message = "Invalid subject ID." });
-
-                var message = await _subjectService.DeleteSubjectAsync(id);
-                return Ok(new { message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred." });
-            }
-        }
     }
 }
